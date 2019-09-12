@@ -5,10 +5,12 @@
             "includePath": [
                 "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**",
                 "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.21\\**",
-                "D:\\Users\\Danilo\\Documents\\Arduino\\libraries\\*"
+                "D:\\Users\\Danilo\\Documents\\Arduino\\libraries\\*",
+                "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.23\\**"
             ],
             "forcedInclude": [
-                "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.21\\cores\\arduino\\Arduino.h"
+                "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.21\\cores\\arduino\\Arduino.h",
+                "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.23\\cores\\arduino\\Arduino.h"
             ],
             "browse": {
                 "path": [
@@ -24,7 +26,10 @@
             "intelliSenseMode": "msvc-x64",
             "compilerPath": "D:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/bin/Hostx64/x64/cl.exe",
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++17",
+            "defines": [
+                "USBCON"
+            ]
         }
     ],
     "version": 4
