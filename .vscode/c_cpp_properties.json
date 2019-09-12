@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\**",
+                "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.21\\**",
+                "D:\\Users\\Danilo\\Documents\\Arduino\\libraries\\*"
+            ],
+            "forcedInclude": [
+                "C:\\Users\\danil\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.6.21\\cores\\arduino\\Arduino.h"
+            ],
+            "browse": {
+                "path": [
+                    "D:\\Program Files (x86)\\Arduino\\hardware",
+                    "D:\\Program Files (x86)\\Arduino\\libraries",
+                    "D:\\Users\\Danilo\\Documents\\Arduino\\libraries",
+                    "D:\\Users\\Danilo\\Documents\\Arduino\\hardware/",
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "intelliSenseMode": "msvc-x64",
+            "compilerPath": "D:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
