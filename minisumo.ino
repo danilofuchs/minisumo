@@ -26,6 +26,7 @@ int IRTras;
 int IRFrenteD;
 int tempo = 0;
 int botao = 0;
+bool comecou = 0;
 int tempoFuga = 400;
 int tempoAtaque = 200;
 int ultimoTempoAtaque = 0;
@@ -123,8 +124,8 @@ float lerUltraE()
   // equação horária do MRU: d = v*t.
   if (distanceE == 0 || distanceE > 80)
     distanceE = 80;
-  Serial.print(distanceE);
-  Serial.print(";");
+  //Serial.print(distanceE);
+  //Serial.print(";");
   return distanceE;
 }
 
@@ -137,10 +138,12 @@ float lerUltraD()
   // equação horária do MRU: d = v*t.
   if (distanceD == 0 || distanceD > 80)
     distanceD = 80;
-  Serial.print(distanceD);
-  Serial.println(";");
+  //Serial.print(distanceD);
+  //Serial.println(";");
   return distanceD;
 }
+
+int maxSensorFE = 0, maxSensorFD = 0, maxSensorT = 0, minSensorFE = 9999, minSensorFD = 9999, minSensorT = 9999;
 
 void setup()
 {
@@ -162,11 +165,11 @@ void setup()
 
   randomSeed(analogRead(0)); // isso faz com que a sequência de números gerados sejam diferentes.
 
-  while (botao == 0)
-  { // ele só sai daqui quando o botão for precionado, indicando que deve começar a luta.
-    botao = digitalRead(pinBotao);
-  }
-  delay(5000); // tempo definido pela competição para começar a lutar após ser ligado: 5 segundos
+  // while (botao == 0)
+  // { // ele só sai daqui quando o botão for precionado, indicando que deve começar a luta.
+  //   botao = digitalRead(pinBotao);
+  // }
+  // delay(5000); // tempo definido pela competição para começar a lutar após ser ligado: 5 segundos
 }
 
 enum ESTADO
@@ -178,25 +181,110 @@ enum ESTADO
 ESTADO estado = Procurando;
 int ultimoTempo = 0;
 
+bool sensorIRFE()
+{
+  IRFrenteE = analogRead(IRFrentePinE);
+  if (IRFrenteE < (maxSensorFE + minSensorFE) / 2)
+    return true;
+  else
+    return false;
+}
+
+bool sensorIRFD()
+{
+  IRFrenteD = analogRead(IRFrentePinD);
+  if (IRFrenteD < (maxSensorFD + minSensorFD) / 2)
+    return true;
+  else
+    return false;
+}
+
+bool sensorIRT()
+{
+  IRTras = analogRead(IRTrasPin);
+  if (IRTras < (maxSensorT + minSensorT) / 2)
+    return true;
+  else
+    return false;
+}
+
+void calibrateSensors()
+{
+  IRFrenteE = analogRead(IRFrentePinE); //vai de 0 a 1023, menor que 301 ele identifica branco. -200 porque o sensor estava com um offset.
+  IRTras = analogRead(IRTrasPin);
+  IRFrenteD = analogRead(IRFrentePinD);
+  if (IRFrenteE > maxSensorFE)
+    maxSensorFE = IRFrenteE;
+  if (IRFrenteE < minSensorFE)
+    minSensorFE = IRFrenteE;
+  if (IRFrenteD > maxSensorFD)
+    maxSensorFD = IRFrenteD;
+  if (IRFrenteD < minSensorFD)
+    minSensorFD = IRFrenteD;
+  if (IRTras > maxSensorT)
+    maxSensorT = IRTras;
+  if (IRTras < minSensorT)
+    minSensorT = IRTras;
+}
+
 void loop()
+{
+  botao = digitalRead(pinBotao);
+  while (botao == 0 && !comecou)
+  {
+    Serial.println("Calibrando");
+    calibrateSensors();
+    botao = digitalRead(pinBotao);
+  }
+  if (!comecou && botao == 1)
+  {
+    // Serial.println("Pressionou");
+    while (botao == 1)
+    {
+      // Serial.println("Esperando 0");
+      botao = digitalRead(pinBotao);
+    }
+    // Serial.println("Comeca em 5000");
+    int ms = millis();
+    delay(5000);
+    // Serial.println("Comecando");
+    // Serial.println(millis() - ms);
+    comecou = true;
+  }
+  if (comecou)
+  {
+    luta();
+  }
+}
+
+void luta()
 {
   // put your main code here, to run repeatedly:
 
   lerUltraE();
   lerUltraD();
-  IRFrenteE = analogRead(IRFrentePinE) - 200; //vai de 0 a 1023, menor que 301 ele identifica branco. -200 porque o sensor estava com um offset.
-  IRTras = analogRead(IRTrasPin);
-  IRFrenteD = analogRead(IRFrentePinD);
-  //Serial.println(IRFrenteE);
-  //Serial.println(IRFrenteD);
-  //Serial.println(IRTras);
+  bool sFD, sFE, sT;
+  sFD = sensorIRFD();
+  sFE = sensorIRFE();
+  sT = sensorIRT();
+  //vai de 0 a 1023, menor que 301 ele identifica branco. -200 porque o sensor estava com um offset.
+  //IRTras = analogRead(IRTrasPin);
+  //IRFrenteD = analogRead(IRFrentePinD);
+  //Serial.print("%d; %d; %d;\n", IRFrenteE, IRFrenteD, IRTras);
+  Serial.print(sFD);
+  Serial.print("; ");
+  Serial.print(sFE);
+  Serial.print("; ");
+  Serial.print(sT);
+  Serial.print("; ");
+  Serial.println("");
   bool precisaAtacar = estado == Atacando && millis() - ultimoTempoAtaque < tempoAtaque;
   if (precisaAtacar)
   {
     andarFrente(255);
     estado = Atacando;
   }
-  if (IRFrenteE < 301 && IRFrenteD < 301)
+  if (sFE || sFD)
   { // a preocupação principal é não sair do tatame, então verificamos primeiro os sensores de linha
     andarTras(255);
     if (estado != Fugindo)
@@ -208,38 +296,36 @@ void loop()
     //Serial.println("Os dois");
     //delay(tempoDelay);
   }
-  else if (IRFrenteD < 301)
-  { //aqui, vamos fazer uma movimentação especial, uma mistura de giro com andar pra tras.
+  /*else if (sFD) { //aqui, vamos fazer uma movimentação especial, uma mistura de giro com andar pra tras.
     analogWrite(motorEFrente, 0);
     analogWrite(motorDFrente, 0);
     analogWrite(motorETras, 153);
     analogWrite(motorDTras, 255);
-    if (estado != Fugindo)
+    if(estado!=Fugindo)
     {
       estado = Fugindo;
       ultimoTempo = millis();
       //Serial.println("Fugindo");
     }
-
+    
     //Serial.println("Direito");
     //delay(tempoDelay);
   }
-  else if (IRFrenteE < 301)
-  {
+  else if (sFE) {
     analogWrite(motorEFrente, 0);
     analogWrite(motorDFrente, 0);
     analogWrite(motorETras, 255);
     analogWrite(motorDTras, 153);
     //Serial.println("Esquerdo");
-    if (estado != Fugindo)
+    if(estado!=Fugindo)
     {
       estado = Fugindo;
       ultimoTempo = millis();
       //Serial.println("Fugindo");
     }
     //delay(tempoDelay);
-  }
-  else if (IRTras < 301)
+  }*/
+  else if (sT)
   {
     andarFrente(255);
     //Serial.println("tras");
@@ -262,19 +348,19 @@ void loop()
   }
   else if (distanceD < distance && millis() - ultimoTempo > tempoFuga && !precisaAtacar)
   { // se isso for verdade, quer dizer que distanceE>distance.
-    girarDireita(255);
+    girarDireita(80);
     //Serial.println("alvo a direita");
     estado = Procurando;
 
-    delay(tempo);
+    //delay(tempo);
   }
   else if (distanceE < distance && millis() - ultimoTempo > tempoFuga && !precisaAtacar)
   { // se isso for verdade, quer dizer que distanceD>distance.
-    girarEsquerda(255);
+    girarEsquerda(80);
     estado = Procurando;
     //Serial.println("alvo a esquerda");
 
-    delay(tempo);
+    //delay(tempo);
   }
   /*else if(distanceE < 80 && distanceE > distance || distanceD < 80 && distanceD > distance){
     conferir(100);
